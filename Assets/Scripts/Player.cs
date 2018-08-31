@@ -6,10 +6,13 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public bool rotateToMainCamera = false;
+    public Transform weapon;
     public float moveSpeed = 5f;
     public float jumpHeight = 10f;
     public Rigidbody rigid;
     public float rayDistance = 1f;
+    public LayerMask ignoreLayers;
 
     private void OnDrawGizmos()
     {
@@ -18,19 +21,15 @@ public class Player : MonoBehaviour
         Gizmos.DrawLine(groundRay.origin, groundRay.origin + groundRay.direction * rayDistance);
     }
 
-    private bool isGrounded = true;
+    private bool isGrounded = false;
 
-    // Use this for initialization
-    void Start()
-    {
-
-    }
+   
 
     // OnCollisionEnter is called when this collider/rigidbody has begun touching another rigidbody/collider
-    private void OnCollisionEnter(Collision collision)
-    {
+   // private void OnCollisionEnter(Collision collision)
+   // {
        
-    }
+   // }
 
     bool IsGrounded()
     {
@@ -51,18 +50,30 @@ public class Player : MonoBehaviour
         Vector3 moveDir = new Vector3(inputH, 0f, inputV);
         Vector3 force = new Vector3(moveDir.x, rigid.velocity.y, moveDir.z);
 
-        if (Input.GetButton("Jump") && IsGrounded())
+       Vector3 camEuler = Camera.main.transform.eulerAngles;
+
+        if(rotateToMainCamera)
+        {
+            moveDir = Quaternion.AngleAxis(camEuler.y, Vector3.up) * moveDir;
+        }
+
+        
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             force.y = jumpHeight;
         }
 
         rigid.velocity = force;
 
-        if(moveDir.magnitude > 0)
-        {
-            // Rotate the player to that moveDir
-            transform.rotation = Quaternion.LookRotation(moveDir);
-        }
+        //if(moveDir.magnitude > 0)
+        // {
+        // Rotate the player to that moveDir
+        //transform.rotation = Quaternion.LookRotation(moveDir);
+        // }
+        Quaternion playerRotation = Quaternion.AngleAxis(camEuler.y, Vector3.up);
+        Quaternion weaponRotaton = Quaternion.AngleAxis(camEuler.x, Vector3.right);
+        weapon.localRotation = weaponRotaton; 
+        transform.rotation = playerRotation;
     }
 
 }
