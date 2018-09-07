@@ -1,93 +1,45 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 //CTRL + M + O/P
 public class Enemy : MonoBehaviour
 {
+    public int health = 100;
+    public float hitDelay = 1f;
+    public Color hitColor = Color.red;
 
-    //Declaration
-    public enum State
-    {
-        Patrol,
-        Seek
-    }
-
-    public State currentState = State.Patrol;
     public Transform target;
-    public float seekRadius;
+    public NavMeshAgent agent;
+    public Renderer rend;
 
-    public Transform waypointParent;
-    public float moveSpeed;
-    public float stoppingDistance = 1f;
+    private Color originalColor;
 
-    private Transform[] waypoints;
-    private int currentIndex = 1;
-
-    void Patrol()
+    private void Start()
     {
-        {
-            Transform point = waypoints[currentIndex];
-            float distance = Vector3.Distance(transform.position, point.position);
-            if (distance < .5f)
-            {
-                currentIndex++;
-                if (currentIndex >= waypoints.Length)
-                {
-                    currentIndex = 1;
-                }
-            }
-            transform.position = Vector3.MoveTowards(transform.position, point.position, moveSpeed);
-        }
-
-        float distToTarget = Vector3.Distance(transform.position, target.position);
-        if (distToTarget < seekRadius)
-        {
-            currentState = State.Seek;
-        }
-
+        originalColor = rend.material.color;
     }
 
-    void Seek()
+    private void Update()
     {
-        //transform.position = Vector3.MoveTowards(transform.position, point.position, moveSpeed);
-        float distToTarget = Vector3.Distance(transform.position, target.position);
-        if (distToTarget > seekRadius)
-        {
-            currentState = State.Patrol;
-        }
+        agent.SetDestination(target.position);
     }
 
-        // Use this for initialization
-        void Start()
+    IEnumerator Hit()
+    {
+        rend.material.color = hitColor;
+        yield return new WaitForSeconds(hitDelay);
+        rend.material.color = originalColor;
+    }
+    public void DealDamage(int damageDealt)
+    {
+        StartCoroutine(Hit());
+
+        health -= damageDealt;
+        if(health <= 0)
         {
-            waypoints = waypointParent.GetComponentsInChildren<Transform>();
+            Destroy(gameObject);
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-            //Switch current state
-            switch (currentState)
-            {
-                case State.Patrol:
-                    Patrol();
-                    break;
-                case State.Seek:
-                    Seek();
-                    break;
-                default:
-                    break;
-            }
-
-
-            //Switch current state
-            //If we are in patrol
-            //Call Patrol()
-            //If we are in seek
-            //Call Seek()
-
-
-        }
-    
+    }
 }
