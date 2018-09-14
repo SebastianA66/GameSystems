@@ -48,7 +48,7 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetButton("Fire1")) //If fire button is pressed and weapon is allowed to fire
+        if(Input.GetButtonDown("Fire1")) //If fire button is pressed and weapon is allowed to fire
         {
             currentWeapon.Attack(); //Fire the weapon
         }
