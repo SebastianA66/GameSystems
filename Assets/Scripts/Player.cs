@@ -8,15 +8,19 @@ public class Player : MonoBehaviour
 {
     public bool rotateToMainCamera = false;
     public bool rotateWeapon = false;
-    public Weapon currentWeapon;
+    
 
     public float moveSpeed = 5f;
     public float jumpHeight = 10f;
     public Rigidbody rigid;
     public float rayDistance = 1f;
     public LayerMask ignoreLayers;
-
+    public Weapon[] weapons;
+        
+    private Weapon currentWeapon;
     private bool isGrounded = false;
+    private Vector3 moveDir;
+    private bool isJumping;
 
     private void OnDrawGizmos()
     {
@@ -34,11 +38,11 @@ public class Player : MonoBehaviour
        
    // }
 
-    bool IsGrounded()
+    private bool IsGrounded()
     {
         Ray groundRay = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
-        if (Physics.Raycast(groundRay, out hit, rayDistance))
+        if (Physics.Raycast(groundRay, out hit, rayDistance, ~ignoreLayers))
         {
             return true; //is grounded
         }
@@ -46,15 +50,8 @@ public class Player : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        if(Input.GetButtonDown("Fire1")) //If fire button is pressed and weapon is allowed to fire
-        {
-            currentWeapon.Attack(); //Fire the weapon
-        }
-        float inputH = Input.GetAxis("Horizontal") * moveSpeed;
-        float inputV = Input.GetAxis("Vertical") * moveSpeed;
-        Vector3 moveDir = new Vector3(inputH, 0f, inputV);
+    private void Update()
+    {          
        
 
        Vector3 camEuler = Camera.main.transform.eulerAngles;
@@ -66,9 +63,10 @@ public class Player : MonoBehaviour
 
         Vector3 force = new Vector3(moveDir.x, rigid.velocity.y, moveDir.z);
 
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+        if (isJumping && IsGrounded())
         {
             force.y = jumpHeight;
+            isJumping = false;
         }
 
         rigid.velocity = force;
@@ -80,6 +78,7 @@ public class Player : MonoBehaviour
         // }
         Quaternion playerRotation = Quaternion.AngleAxis(camEuler.y, Vector3.up);
         transform.rotation = playerRotation;
+
         if (rotateWeapon)
         {
             Quaternion weaponRotaton = Quaternion.AngleAxis(camEuler.x, Vector3.right);
@@ -89,4 +88,55 @@ public class Player : MonoBehaviour
         
     }
 
+    private void DisableAllWeapons()
+    {
+        // Loop through every weapon
+        foreach (Weapon weapon in weapons)
+        {
+            // Deactivate weapon's GameObject
+            weapon.gameObject.SetActive(false);
+        }
+
+    }
+
+    // Selects and switches out the current weapon
+    public void SelectWeapon(int index)
+    {
+        //check index is within range of weapons array
+        // is within range i >= 0 && i < length
+        // is not within range i < 0 && i >= length
+        if (index < 0 || index >= weapons.Length)
+            return;
+        // Disable all weapons
+        DisableAllWeapons();
+        // Enable weapon at index
+        weapons[index].gameObject.SetActive(true);
+
+        // Set the currentWeapon
+        currentWeapon = weapons[index];
+    }
+    public void Move(float inputH, float inputV)
+    {
+        moveDir = new Vector3(inputH, 0f, inputV);
+        moveDir *= moveSpeed;
+    }
+
+    public void Jump()
+    {
+        isJumping = true;
+    }
+
+    public void Attack()
+    {
+        currentWeapon.Attack();
+    }
+    public void Interact()
+    {
+        // If interactable is found
+        if(interactObject)
+        {
+            // Run interact
+            interactObject.Interact();
+        }
+    }
 }
