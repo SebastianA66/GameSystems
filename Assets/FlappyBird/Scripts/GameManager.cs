@@ -21,6 +21,7 @@ namespace FlappyBird
         #endregion
 
         public int score = 0;
+        public float timeScale = 1;
         public bool isGameOver = false;
 
         public delegate void IntCallBack(int number);
@@ -48,6 +49,12 @@ namespace FlappyBird
 
             // Call subscribers
             scoreAdded.Invoke(score);
+        }
+
+        public void GameOver()
+        {
+            timeScale = 0;
+            isGameOver = true;
         }
     }
 

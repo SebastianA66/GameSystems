@@ -27,8 +27,10 @@ namespace FlappyBird
         {
             // Get position
             Vector3 pos = transform.position;
+
+            float timeScale = GameManager.Instance.timeScale;
             // Move position
-            pos += Vector3.left * moveSpeed * Time.deltaTime;
+            pos += Vector3.left * moveSpeed * Time.deltaTime * timeScale;
             //IF leaving left side if screen and is repeating
             if (pos.x < -width && isRepeating)
             {
